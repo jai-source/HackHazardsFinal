@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convolingo</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-darker: #0a0a0a;
+            --primary: #7b2cbf;
+            --primary-light: #9d4edd;
+            --text: #e0e0e0;
+            --text-secondary: #b0b0b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0;
+            animation: fadeIn 1s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .text{
+            color: #e0e0e0;
+            font-size: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease forwards 0.3s;
+        }
+        
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section{
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease forwards;
+        }   
+        
+        .logo {
+            font-weight: 600;
+            font-size: 3rem;
+            background: linear-gradient(90deg, var(--primary), #c77dff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-top: 2rem;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: fadeDown 0.8s ease forwards 0.2s;
+        }
+
+        @keyframes fadeDown {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: #e0e0e0;
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            transform: scale(2);
+            position: relative;
+            overflow: hidden;
+            margin-top: 4rem;
+            margin-left: 3rem;
+            width: 100px;
+            height: 50px;
+            opacity: 0;
+            animation: fadeIn 0.8s ease forwards 0.6s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-light);
+            box-shadow: 0 4px 12px rgba(123, 44, 191, 0.3);
+            transform: translateY(-5px) scale(2.04);
+        }
+
+        .btn:active {
+            transform: translateY(1px) scale(1.96);
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple-animation 600ms linear;
+            background-color: rgba(255, 255, 255, 0.6);
+        }
+
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(2, auto);
+            gap: 10rem;
+            margin-top: 3rem;
+            margin-bottom: auto;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap:4rem;
+            }
+        }
+
+        .about-us {
+            margin-top: 5rem;
+            padding: 2rem;
+            background-color: var(--bg-darker);
+            color: var(--text);
+            text-align: center;
+            border-top: 1px solid var(--primary);
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 0.8s;
+        }
+
+        .about-us h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease forwards 1s;
+        }
+
+        .team {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 1200px) {
+            .team {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        .team-member {
+            background-color: var(--bg-dark);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease forwards;
+        }
+        .team-member:hover {
+            transform: translateY(0) scale(1.05) !important;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        /* Staggered animations for team members */
+        .team-member:nth-child(1) { animation-delay: 1.2s; }
+        .team-member:nth-child(2) { animation-delay: 1.4s; }
+        .team-member:nth-child(3) { animation-delay: 1.6s; }
+        .team-member:nth-child(4) { animation-delay: 1.8s; }
+
+        .team-member:hover {
+            transform: translateY(0) scale(1.05) !important;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .team-member img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .team-member h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-light);
+        }
+
+        .team-member p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            opacity: 0;
+            animation: fadeIn 0.8s ease 1.4s forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">Convolingo</div>
+    <div class="container">
+        <div class="section" style="animation-delay: 0.4s;">
+            <p class="text">Text to Text translator</p>
+            <button onclick="location.href = '/textify';" class="btn" id="button1">Textify</button>
+        </div>
+        <div class="section" style="animation-delay: 0.5s;">
+            <p class="text">Audio to Audio translator</p>
+            <button onclick="location.href = '/audiomac_real';" class="btn" id="button2">AudioMac</button>
+        </div>    
+    </div>
+
+    <div class="about-us">
+        <h2>About Us</h2>
+        <div class="team">
+            <div class="team-member">
+                <img src="/static/jai.jpg" alt="Person 1">
+                <h3>Jai Ratna</h3>
+                <p>The AI maestro: the mind behind the AI</p>
+            </div>
+            <div class="team-member">
+                <img src="/static/jayant.jpg" alt="Person 2">
+                <h3>Jayant Sharda</h3>
+                <p>The front end hero: the mind behind the UI/UX</p>
+            </div>
+            <div class="team-member">
+                <img src="/static/shriya.jpg" alt="Person 3">
+                <h3>Shriya Desai</h3>
+                <p>The interfacing queen: mind that brought the AI and frontend together</p>
+            </div>
+            <div class="team-member">
+                <img src="/static/daksh.jpg" alt="Person 4">
+                <h3>Daksh Anand</h3>
+                <p>The interfacing king: the mind that brought the AI and frontend together</p>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>Groq Translator &copy; <span id="current-year"></span> | Simple, fast language conversion</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Set current year in footer
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+           
+            // Create ripple effect function
+            function createRipple(event) {
+                const button = event.currentTarget;
+                const circle = document.createElement("span");
+                const diameter = Math.max(button.clientWidth, button.clientHeight);
+                const radius = diameter / 2;
+
+                // Set circle dimensions and position based on mouse click
+                circle.style.width = circle.style.height = `${diameter}px`;
+                circle.style.left = `${event.pageX - button.offsetLeft - radius}px`;
+                circle.style.top = `${event.pageY - button.offsetTop - radius}px`;
+                circle.classList.add("ripple");
+
+                // Remove existing ripple if present
+                const ripple = button.getElementsByClassName("ripple")[0];
+                if (ripple) ripple.remove();
+
+                button.appendChild(circle);
+            }
+
+            // Add ripple effect to buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    createRipple(e);
+                    const ripple = this.querySelector('.ripple');
+                    if (ripple) {
+                        setTimeout(() => {
+                            ripple.remove();
+                        }, 600);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudioMac - Voice Translator</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-darker: #0a0a0a;
+            --primary: #7b2cbf;
+            --primary-light: #9d4edd;
+            --text: #e0e0e0;
+            --text-secondary: #b0b0b0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+        
+        header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(123, 44, 191, 0.2);
+            animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transform: translateY(-100%);
+        }
+        
+        .logo {
+            font-weight: 600;
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, var(--primary), #c77dff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            opacity: 0;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+        
+        .container {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        select, button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 4px;
+            border: 1px solid #7b2cbf;
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+        }
+
+        button {
+            background-color: #7b2cbf;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #9d4edd;
+        }
+
+        button:disabled {
+            background-color: #4a4a4a;
+            cursor: not-allowed;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            border: 1px solid #7b2cbf;
+        }
+
+        .status {
+            color: #9d4edd;
+            margin: 10px 0;
+        }
+
+        #timer {
+            font-size: 1.2em;
+            color: #9d4edd;
+            margin: 10px 0;
+        }
+
+        .converter-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 2rem;
+        }
+
+        .text-box#source-box {
+            grid-column: 1 / 2;
+            grid-row: 1 / 2;
+        }
+
+        .text-box#target-box {
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+        }
+
+        .swap-btn {
+            grid-column: 1 / 3;
+            grid-row: 2 / 3;
+            justify-self: center;
+        }
+
+        @media (max-width: 768px) {
+            .converter-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+            }
+
+            .text-box#source-box,
+            .text-box#target-box,
+            .swap-btn {
+                grid-column: 1 / 2;
+            }
+
+            .text-box#source-box {
+                grid-row: 1 / 2;
+            }
+
+            .swap-btn {
+                grid-row: 2 / 3;
+            }
+
+            .text-box#target-box {
+                grid-row: 3 / 4;
+            }
+        }
+        
+        .text-box {
+            background-color: var(--bg-darker);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border: 1px solid rgba(123, 44, 191, 0.1);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+        }
+        
+        .text-box:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 8px 24px rgba(123, 44, 191, 0.15);
+        }
+        
+        .text-box-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .language-selector {
+            background-color: var(--bg-dark);
+            color: var(--text);
+            border: 1px solid rgba(123, 44, 191, 0.3);
+            border-radius: 8px;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            transform: scale(0.95);
+            opacity: 0;
+            animation: fadeInScale 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+        }
+        
+        .language-selector:hover {
+            border-color: var(--primary);
+            transform: scale(1.02) !important;
+        }
+        
+        .text-area {
+            background-color: var(--bg-dark);
+            border: none;
+            border-radius: 8px;
+            padding: 1rem;
+            color: var(--text);
+            resize: none;
+            flex: 1;
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(123, 44, 191, 0.1);
+            transition: all 0.3s ease;
+            transform: translateY(10px);
+            opacity: 0;
+            animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards;
+        }
+        
+        .text-area:focus {
+            outline: 1px solid var(--primary);
+            box-shadow: 0 0 0 3px rgba(123, 44, 191, 0.2);
+            transform: translateY(0) scale(1.01) !important;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            transform: translateY(10px);
+            opacity: 0;
+            animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 1s forwards;
+        }
+        
+        .btn {
+            background-color: transparent;
+            color: var(--text);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transform: scale(0.98);
+            opacity: 0;
+            animation: fadeInScale 0.5s cubic-bezier(0.16, 1, 0.3, 1) 1.1s forwards;
+        }
+        
+        .btn:hover {
+            background-color: rgba(123, 44, 191, 0.1);
+            transform: translateY(-2px) scale(1.02) !important;
+        }
+        
+        .btn:active {
+            transform: translateY(1px) scale(0.98) !important;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            animation: fadeInScale 0.5s cubic-bezier(0.16, 1, 0.3, 1) 1.2s forwards;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+            box-shadow: 0 4px 12px rgba(123, 44, 191, 0.3);
+        }
+        
+        .swap-btn {
+            align-self: center;
+            background-color: var(--bg-darker);
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: scale(0);
+            opacity: 0;
+            animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s forwards;
+        }
+        
+        .swap-btn:hover {
+            background-color: rgba(123, 44, 191, 0.2);
+            transform: rotate(180deg) scale(1.1) !important;
+            box-shadow: 0 6px 16px rgba(123, 44, 191, 0.2);
+        }
+        
+        .swap-btn:active {
+            transform: rotate(180deg) scale(0.95) !important;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            opacity: 0;
+            animation: fadeIn 0.8s ease 1.4s forwards;
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite !important;
+        }
+        
+        .typing-animation {
+            border-right: 2px solid var(--primary);
+            animation: blink 0.7s step-end infinite;
+        }
+        
+        /* Keyframes */
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInScale {
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes slideDown {
+            to { transform: translateY(0); }
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(123, 44, 191, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(123, 44, 191, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(123, 44, 191, 0); }
+        }
+        
+        @keyframes blink {
+            from, to { border-color: transparent; }
+            50% { border-color: var(--primary); }
+        }
+        
+        @keyframes ripple {
+            to { transform: scale(4); opacity: 0; }
+        }
+        
+        @keyframes shake {
+            10%, 90% { transform: translateX(-1px); }
+            20%, 80% { transform: translateX(2px); }
+            30%, 50%, 70% { transform: translateX(-4px); }
+            40%, 60% { transform: translateX(4px); }
+        }
+        
+        @keyframes loadingShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .converter-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .swap-btn {
+                transform: rotate(90deg) scale(0);
+                margin: 1rem 0;
+                animation: popInMobile 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s forwards;
+            }
+            
+            .swap-btn:hover {
+                transform: rotate(270deg) scale(1.1) !important;
+            }
+            
+            @keyframes popInMobile {
+                0% { transform: rotate(90deg) scale(0); opacity: 0; }
+                70% { transform: rotate(90deg) scale(1.1); opacity: 1; }
+                100% { transform: rotate(90deg) scale(1); opacity: 1; }
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">AudioMac</div>
+    </header>
+    
+    <main>
+        <div class="container">
+            <h1>Voice Translator</h1>
+            
+            <div>
+                <select id="source-language">
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="hi">Hindi</option>
+                    <option value="ja">Japanese</option>
+                </select>
+                
+                <select id="target-language">
+                    <option value="hi">Hindi</option>
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="ja">Japanese</option>
+                </select>
+            </div>
+
+            <div>
+                <button id="voice-input-btn">🎤 Start Recording</button>
+                <div id="timer"></div>
+            </div>
+
+            <div>
+                <h3>Original Text:</h3>
+                <textarea id="source-text" rows="4" readonly></textarea>
+            </div>
+
+            <div>
+                <h3>Translated Text:</h3>
+                <textarea id="target-text" rows="4" readonly></textarea>
+            </div>
+
+            <div>
+                <h3>Audio Output:</h3>
+                <audio id="audio-output" controls></audio>
+            </div>
+
+            <div class="status" id="status"></div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>Groq Translator &copy; <span id="current-year"></span> | Simple, fast language conversion</p>
+    </footer>
+
+    <script>
+        const voiceInputBtn = document.getElementById("voice-input-btn");
+        const sourceText = document.getElementById("source-text");
+        const targetText = document.getElementById("target-text");
+        const sourceLang = document.getElementById("source-language");
+        const targetLang = document.getElementById("target-language");
+        const audioOutput = document.getElementById("audio-output");
+        const timerDisplay = document.getElementById("timer");
+        const statusDisplay = document.getElementById("status");
+        
+        let isRecording = false;
+        let recorder = null;
+        let timer = null;
+        let recordingTime = 0;
+
+        function updateTimer() {
+            const minutes = Math.floor(recordingTime / 60);
+            const seconds = recordingTime % 60;
+            timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            recordingTime = 0;
+            updateTimer();
+            timer = setInterval(() => {
+                recordingTime++;
+                updateTimer();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+        }
+
+        voiceInputBtn.onclick = async () => {
+            if (isRecording) {
+                // Stop recording
+                voiceInputBtn.disabled = true;
+                voiceInputBtn.textContent = "Processing...";
+                recorder.stop();
+                stopTimer();
+                isRecording = false;
+            } else {
+                // Start recording
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    recorder = new MediaRecorder(stream);
+                    let chunks = [];
+
+                    recorder.ondataavailable = (e) => chunks.push(e.data);
+
+                    recorder.onstop = async () => {
+                        const blob = new Blob(chunks, { type: "audio/webm" });
+                        const formData = new FormData();
+                        formData.append("audio", blob, "voice.webm");
+                        formData.append("source_lang", sourceLang.value);
+                        formData.append("target_lang", targetLang.value);
+
+                        statusDisplay.textContent = "Translating...";
+                        targetText.value = "Translating...";
+
+                        try {
+                            const res = await fetch("/translate-audio", {
+                                method: "POST",
+                                body: formData
+                            });
+
+                            const data = await res.json();
+                            
+                            if (data.error) {
+                                throw new Error(data.error);
+                            }
+
+                            sourceText.value = data.recognized_text || "Could not recognize speech.";
+                            targetText.value = data.ai_translation || "Translation failed.";
+
+                            if (data.audio_base64) {
+                                const audioBlob = new Blob(
+                                    [Uint8Array.from(atob(data.audio_base64), c => c.charCodeAt(0))],
+                                    { type: "audio/mp3" }
+                                );
+                                const audioUrl = URL.createObjectURL(audioBlob);
+                                audioOutput.src = audioUrl;
+                                audioOutput.play();
+                                statusDisplay.textContent = "Translation complete!";
+                            }
+                        } catch (error) {
+                            statusDisplay.textContent = `Error: ${error.message}`;
+                            console.error("Translation error:", error);
+                        }
+
+                        voiceInputBtn.disabled = false;
+                        voiceInputBtn.textContent = "🎤 Start Recording";
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    chunks = [];
+                    recorder.start();
+                    startTimer();
+                    isRecording = true;
+                    voiceInputBtn.textContent = "🎙️ Stop Recording";
+                    statusDisplay.textContent = "Recording...";
+                } catch (error) {
+                    statusDisplay.textContent = `Error accessing microphone: ${error.message}`;
+                    console.error("Microphone error:", error);
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current year in footer
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+            
+            // Elements
+            const sourceText = document.getElementById('source-text');
+            const targetText = document.getElementById('target-text');
+            const translateBtn = document.getElementById('translate-btn');
+            const swapBtn = document.getElementById('swap-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const voiceInputBtn = document.getElementById('voice-input-btn');
+            const voiceOutputBtn = document.getElementById('voice-output-btn');
+            const sourceLanguage = document.getElementById('source-language');
+            const targetLanguage = document.getElementById('target-language');
+            const sourceBox = document.getElementById('source-box');
+            const targetBox = document.getElementById('target-box');
+            const historyBtn = document.getElementById('history-btn');
+            
+            // Create ripple effect function
+            function createRipple(event) {
+                const button = event.currentTarget;
+                const circle = document.createElement("span");
+                const diameter = Math.max(button.clientWidth, button.clientHeight);
+                const radius = diameter / 2;
+                
+                circle.style.width = circle.style.height = `${diameter}px`;
+                circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+                circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+                circle.classList.add("ripple");
+                
+                const ripple = button.getElementsByClassName("ripple")[0];
+                if (ripple) ripple.remove();
+                
+                button.appendChild(circle);
+            }
+            
+            // Add ripple effect to buttons
+            const buttons = document.querySelectorAll('.btn, .swap-btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    createRipple(e);
+                    const ripple = this.querySelector('.ripple');
+                    if (ripple) {
+                        setTimeout(() => {
+                            ripple.remove();
+                        }, 600);
+                    }
+                });
+            });
+            
+            // Translate button click
+            translateBtn.addEventListener('click', function() {
+                if (!sourceText.value.trim()) {
+                    // Shake animation for empty input
+                    sourceBox.style.animation = 'shake 0.5s cubic-bezier(.36,.07,.19,.97)';
+                    setTimeout(() => {
+                        sourceBox.style.animation = '';
+                    }, 500);
+                    return;
+                }
+                
+                // Add pulse animation to translate button
+                translateBtn.classList.add('pulse');
+                
+                // Simulate translation loading
+                targetText.value = '';
+                targetText.classList.add('typing-animation');
+                
+                // Loading animation for target box
+                targetBox.style.background = `linear-gradient(
+                    90deg,
+                    var(--bg-darker),
+                    rgba(123, 44, 191, 0.1),
+                    var(--bg-darker)
+                `;
+                targetBox.style.backgroundSize = '200% 100%';
+                targetBox.style.animation = 'loadingShimmer 1.5s infinite linear';
+                
+                // Simulate API call with timeout
+                setTimeout(() => {
+                    const translatedText = simulateTranslation(
+                        sourceText.value, 
+                        sourceLanguage.value, 
+                        targetLanguage.value
+                    );
+                    
+                    // Animate the typing effect
+                    typeText(targetText, translatedText, () => {
+                        targetText.classList.remove('typing-animation');
+                        translateBtn.classList.remove('pulse');
+                        targetBox.style.background = 'var(--bg-darker)';
+                        targetBox.style.animation = '';
+                        
+                        // Success animation
+                        targetBox.style.transform = 'translateY(-5px)';
+                        targetBox.style.boxShadow = '0 8px 20px rgba(123, 44, 191, 0.15)';
+                        setTimeout(() => {
+                            targetBox.style.transform = 'translateY(0)';
+                            targetBox.style.boxShadow = '0 4px 12px rgba(123, 44, 191, 0.1)';
+                        }, 500);
+                    });
+                }, 800);
+            });
+            
+            // Swap languages
+            swapBtn.addEventListener('click', function() {
+                const tempLang = sourceLanguage.value;
+                sourceLanguage.value = targetLanguage.value;
+                targetLanguage.value = tempLang;
+                
+                const tempText = sourceText.value;
+                sourceText.value = targetText.value;
+                targetText.value = tempText;
+                
+                // Animation
+                const isMobile = window.innerWidth <= 768;
+                swapBtn.style.transform = isMobile 
+                    ? 'rotate(630deg) scale(1.2)' 
+                    : 'rotate(540deg) scale(1.2)';
+                
+                // Float animation for text boxes
+                sourceBox.style.transform = 'translateY(-10px)';
+                targetBox.style.transform = 'translateY(-10px)';
+                
+                setTimeout(() => {
+                    swapBtn.style.transform = isMobile 
+                        ? 'rotate(90deg) scale(1)' 
+                        : 'rotate(0) scale(1)';
+                        
+                    sourceBox.style.transform = 'translateY(0)';
+                    targetBox.style.transform = 'translateY(0)';
+                }, 500);
+            });
+            
+            // Copy translation
+            copyBtn.addEventListener('click', function() {
+                if (!targetText.value) {
+                    // Shake animation for empty translation
+                    targetBox.style.animation = 'shake 0.5s cubic-bezier(.36,.07,.19,.97)';
+                    setTimeout(() => {
+                        targetBox.style.animation = '';
+                    }, 500);
+                    return;
+                }
+                
+                navigator.clipboard.writeText(targetText.value).then(() => {
+                    // Visual feedback
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Copied!
+                    `;
+                    copyBtn.style.backgroundColor = 'rgba(123, 44, 191, 0.2)';
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.style.backgroundColor = '';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.textContent = 'Error!';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                    }, 2000);
+                });
+            });
+            
+            // Voice input simulation
+            voiceInputBtn.addEventListener('click', function() {
+                if (!('webkitSpeechRecognition' in window)) {
+                    // Shake animation for unsupported feature
+                    voiceInputBtn.style.animation = 'shake 0.5s cubic-bezier(.36,.07,.19,.97)';
+                    setTimeout(() => {
+                        voiceInputBtn.style.animation = '';
+                    }, 500);
+                    return;
+                }
+                
+                // Animation
+                voiceInputBtn.classList.add('pulse');
+                
+                // Simulate voice recognition
+                setTimeout(() => {
+                    sourceText.value = "This is a simulated voice input result.";
+                    voiceInputBtn.classList.remove('pulse');
+                    
+                    // Animate the source box
+                    sourceBox.style.transform = 'scale(1.02)';
+                    setTimeout(() => {
+                        sourceBox.style.transform = 'scale(1)';
+                    }, 300);
+                }, 1500);
+            });
+            
+            // Voice output simulation
+            voiceOutputBtn.addEventListener('click', function() {
+                if (!targetText.value) {
+                    // Shake animation for empty translation
+                    targetBox.style.animation = 'shake 0.5s cubic-bezier(.36,.07,.19,.97)';
+                    setTimeout(() => {
+                        targetBox.style.animation = '';
+                    }, 500);
+                    return;
+                }
+                
+                // Animation
+                voiceOutputBtn.classList.add('pulse');
+                setTimeout(() => {
+                    voiceOutputBtn.classList.remove('pulse');
+                }, 1000);
+                
+                // Simulate voice output with floating animation
+                voiceOutputBtn.style.transform = 'translateY(-3px)';
+                setTimeout(() => {
+                    voiceOutputBtn.style.transform = 'translateY(0)';
+                }, 300);
+            });
+            
+            // History button
+            historyBtn.addEventListener('click', function() {
+                // Bounce animation
+                historyBtn.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    historyBtn.style.transform = 'scale(1)';
+                }, 300);
+                alert('Translation history would appear here');
+            });
+            
+            // Helper function to simulate translation
+            function simulateTranslation(text, fromLang, toLang) {
+                const translations = {
+                    "English": {
+                        "Spanish": "Este es un texto traducido del inglés al español.",
+                        "French": "Ceci est un texte traduit de l'anglais vers le français.",
+                        "German": "Dies ist ein Text, der vom Englischen ins Deutsche übersetzt wurde.",
+                        "Japanese": "これは英語から日本語に翻訳されたテキストです。"
+                    },
+                    "Spanish": {
+                        "English": "This is a text translated from Spanish to English.",
+                        "French": "Ceci est un texte traduit de l'espagnol vers le français.",
+                        "German": "Dies ist ein Text, der vom Spanischen ins Deutsche übersetzt wurde.",
+                        "Japanese": "これはスペイン語から日本語に翻訳されたテキストです。"
+                    },
+                    "French": {
+                        "English": "This is a text translated from French to English.",
+                        "Spanish": "Este es un texto traducido del francés al español.",
+                        "German": "Dies ist ein Text, der vom Französischen ins Deutsche übersetzt wurde.",
+                        "Japanese": "これはフランス語から日本語に翻訳されたテキストです。"
+                    },
+                    "German": {
+                        "English": "This is a text translated from German to English.",
+                        "Spanish": "Este es un texto traducido del alemán al español.",
+                        "French": "Ceci est un texte traduit de l'allemand vers le français.",
+                        "Japanese": "これはドイツ語から日本語に翻訳されたテキストです。"
+                    },
+                    "Japanese": {
+                        "English": "This is a text translated from Japanese to English.",
+                        "Spanish": "Este es un texto traducido del japonés al español.",
+                        "French": "Ceci est un texte traduit du japonais vers le français.",
+                        "German": "Dies ist ein Text, der vom Japanischen ins Deutsche übersetzt wurde."
+                    }
+                };
+                
+                if (translations[fromLang] && translations[fromLang][toLang]) {
+                    return translations[fromLang][toLang];
+                }
+                return "Translation not available for this language pair.";
+            }
+            
+            // Typing animation effect
+            function typeText(element, text, callback) {
+                let i = 0;
+                element.value = '';
+                
+                function typing() {
+                    if (i < text.length) {
+                        element.value += text.charAt(i);
+                        i++;
+                        setTimeout(typing, 20 + Math.random() * 30);
+                    } else if (callback) {
+                        callback();
+                    }
+                }
+                
+                typing();
+            }
+        });
+    </script>
+
+<audio id="audio-output" controls hidden></audio>
+</body>
+</html>

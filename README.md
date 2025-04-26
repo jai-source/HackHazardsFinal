@@ -38,7 +38,7 @@ Highlight the most important features of your project:
 
 
 📽️ Demo & Deliverables
-Demo Video Link: [Paste YouTube or Loom link here]
+Demo Video Link: https://youtu.be/tx7Xs2lL5-g
 
 ✅ Tasks & Bonus Checklist
 ✅ All members of the team completed the mandatory task - Followed at least 2 of our social channels and filled the form (Details in Participant Manual)

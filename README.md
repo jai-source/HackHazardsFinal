@@ -1,23 +1,13 @@
 🚀 Project Title: 
 Convolingo: a onestep solution to all your translation needs
 
-📌 Problem Statement: 
-Problem Statement 1: translator using Groq AI
+
 
 🎯 Objective: 
 Various people struggle in different countries and in different states. this is mostly due to the language barriers faced by the people.
 our website solves this problem by allowing users to convirt text and audio captured in one language to another
 
-🧠 Team & Approach: 
-Team Name:
-Firewalls
 
-Team Members:
-Jai Ratna AI/backend developer
-Jayant Sharda Frontend developer
-Shriya Desai Server/interface developer
-Daksh Anand Server/interface developer
-(Add links if you want)
 Your Approach:
 we chose this problem because we all have faced somekind of issue due to language barriers. in states like Kerela and Maharashra people dont always know Marathi or telegu. out website helps all users to converse in languages they dont know about
 🛠️ Tech Stack

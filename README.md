@@ -30,9 +30,5 @@ Highlight the most important features of your project:
 📽️ Demo & Deliverables
 Demo Video Link: https://youtu.be/tx7Xs2lL5-g
 
-✅ Tasks & Bonus Checklist
-✅ All members of the team completed the mandatory task - Followed at least 2 of our social channels and filled the form (Details in Participant Manual)
-✅ All members of the team completed Bonus Task 1 - Sharing of Badges and filled the form (2 points) (Details in Participant Manual)
-✅ All members of the team completed Bonus Task 2 - Signing up for Sprint.dev and filled the form (3 points) (Details in Participant Manual)
-(Mark with ✅ if completed)
+
 
